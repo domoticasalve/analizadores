@@ -208,7 +208,7 @@ async function loadFiles(){
   const st=document.getElementById('sheetStatus');
   st.textContent='Buscando archivos en el Synology...';
   try{
-    const r=await fetch('/api/files');
+    const r=await fetch('files.json?_='+Date.now());
     if(!r.ok) throw new Error('HTTP '+r.status);
     const files=await r.json();
     sel.innerHTML='<option value="">— selecciona un archivo —</option>'+
@@ -225,7 +225,7 @@ async function loadSelectedFile(){
   if(!name){st.textContent='Selecciona primero un archivo CSV.';return;}
   st.textContent=`Cargando ${name}...`;
   try{
-    const r=await fetch('/data/'+encodeURIComponent(name));
+    const r=await fetch(encodeURIComponent(name)+'?_='+Date.now());
     if(!r.ok) throw new Error('HTTP '+r.status);
     const text=await r.text();
     const rows=parseCSV(text);
