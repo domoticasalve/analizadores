@@ -178,7 +178,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # Sirve cualquier ruta /analizadores/<archivo> desde PROJECT_DIR.
         rel = sub.lstrip("/")
         if not rel or rel.endswith("/"):
-            rel += "cudeca.html"
+            rel += "analizadores.html"
         candidate = (PROJECT_DIR / rel).resolve()
         try:
             candidate.relative_to(PROJECT_DIR)
@@ -219,7 +219,7 @@ def main():
     print("=" * 60)
     print(f" Proyecto : {PROJECT_DIR}")
     print(f" Datos    : {DATA_DIR}  ({'OK' if DATA_DIR.exists() else 'NO MONTADO'})")
-    print(f" URL      : http://{HOST}:{PORT}{URL_PREFIX}/cudeca.html")
+    print(f" URL      : http://{HOST}:{PORT}{URL_PREFIX}/analizadores.html")
     print("=" * 60)
     print(" Pulsa Ctrl+C para detener.")
     print()
