@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de sensores</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="analizadores.css">
+</head>
+<body>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-sans);}
+.app{padding:1.5rem 0;}
+h1{font-size:20px;font-weight:500;color:var(--color-text-primary);margin-bottom:3px;}
+.subtitle{font-size:13px;color:var(--color-text-secondary);margin-bottom:1.25rem;}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:.9rem;}
+.sec-label{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
+.field-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;}
+.field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:140px;}
+.field label{font-size:12px;color:var(--color-text-secondary);}
+input,select{height:34px;padding:0 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px;width:100%;}
+input:focus,select:focus{outline:none;border-color:var(--color-border-primary);}
+.btn{height:34px;padding:0 14px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-primary);font-size:13px;cursor:pointer;white-space:nowrap;}
+.btn:hover{background:var(--color-background-secondary);}
+.btn:active{transform:scale(.98);}
+.btn-primary{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info);}
+.stats-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:.9rem;}
+.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem;}
+.stat-lbl{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px;}
+.stat-val{font-size:21px;font-weight:500;color:var(--color-text-primary);}
+.two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.9rem;align-items:start;}
+.panel{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;}
+.panel-hdr{padding:9px 14px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:12px;font-weight:500;color:var(--color-text-secondary);display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.tabs{display:flex;gap:3px;}
+.tab{padding:3px 9px;border-radius:var(--border-radius-md);font-size:11px;cursor:pointer;border:0.5px solid transparent;color:var(--color-text-secondary);}
+.tab.on{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info);}
+.tab:hover:not(.on){background:var(--color-background-secondary);}
+table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;}
+thead th{padding:7px 12px;text-align:left;font-weight:500;font-size:11px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.04em;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);}
+tbody tr{border-bottom:0.5px solid var(--color-border-tertiary);}
+tbody tr:last-child{border-bottom:none;}
+tbody td{padding:7px 12px;color:var(--color-text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.badge{display:inline-block;padding:2px 7px;border-radius:99px;font-size:11px;font-weight:500;}
+.b-true{background:#EAF3DE;color:#3B6D11;}
+.b-false{background:#FCEBEB;color:#A32D2D;}
+.b-type{background:#E6F1FB;color:#185FA5;}
+.b-temp{background:#FAEEDA;color:#854F0B;}
+.b-hum{background:#E1F5EE;color:#0F6E56;}
+.empty{padding:2rem;text-align:center;color:var(--color-text-secondary);font-size:13px;}
+.pg{display:flex;align-items:center;gap:6px;padding:8px 12px;border-top:0.5px solid var(--color-border-tertiary);justify-content:flex-end;}
+.pg-info{font-size:12px;color:var(--color-text-secondary);}
+.chart-area{padding:12px;}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;}
+.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--color-text-secondary);}
+.leg-sq{width:9px;height:9px;border-radius:2px;}
+.numeric-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px;border-bottom:0.5px solid var(--color-border-tertiary);}
+.ns{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.6rem .75rem;}
+.ns-lbl{font-size:10px;color:var(--color-text-secondary);margin-bottom:2px;}
+.ns-val{font-size:18px;font-weight:500;}
+.type-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:500;}
+</style>
+
+<img src="media/LogoBlancoV3.png" alt="Cudeca" class="brand-logo"/>
+
+<div class="app">
+  <h1>Panel de sensores</h1>
+  <p class="subtitle">Visualización adaptativa por tipo de sensor · CSV (Synology UIDEE)</p>
+
+  <div class="card">
+    <div class="sec-label">Archivo de datos</div>
+    <div class="field-row">
+      <div class="field"><label>Archivo CSV</label>
+        <select id="fileSelect">
+          <option value="">— selecciona un archivo —</option>
+        </select>
+      </div>
+      <button class="btn" onclick="loadFiles()">Actualizar lista ↻</button>
+      <button class="btn btn-primary" onclick="loadSelectedFile()">Cargar datos ↗</button>
+    </div>
+    <div id="sheetStatus" style="margin-top:8px;font-size:12px;color:var(--color-text-secondary);"></div>
+  </div>
+
+  <div class="card" id="filterCard" style="display:none;">
+    <div class="sec-label">Filtros</div>
+    <div class="field-row">
+      <div class="field"><label>Variable</label>
+        <select id="sheetSelect" onchange="applyFilters()"><option value="">Todas las variables</option></select>
+      </div>
+      <div class="field"><label>Fecha inicio</label><input type="date" id="dateFrom" onchange="applyFilters()"/></div>
+      <div class="field"><label>Fecha fin</label><input type="date" id="dateTo" onchange="applyFilters()"/></div>
+      <div class="field"><label>Hora inicio</label><input type="time" id="timeFrom" onchange="applyFilters()"/></div>
+      <div class="field"><label>Hora fin</label><input type="time" id="timeTo" onchange="applyFilters()"/></div>
+      <div class="field" id="estadoFieldWrap"><label>Estado</label>
+        <select id="estadoFilter" onchange="applyFilters()"><option value="">Todos</option><option value="TRUE">TRUE</option><option value="FALSE">FALSE</option></select>
+      </div>
+      <button class="btn" onclick="clearFilters()">Limpiar</button>
+      <button class="btn" onclick="exportCSV()">CSV</button>
+    </div>
+  </div>
+
+  <div id="statsRow" class="stats-row" style="display:none;">
+    <div class="stat"><div class="stat-lbl">Registros</div><div class="stat-val" id="sTotal">—</div></div>
+    <div class="stat"><div class="stat-lbl" id="s2lbl">Activaciones</div><div class="stat-val" id="sA" style="color:#3B6D11;">—</div></div>
+    <div class="stat"><div class="stat-lbl" id="s3lbl">Inactivos</div><div class="stat-val" id="sB" style="color:#A32D2D;">—</div></div>
+    <div class="stat"><div class="stat-lbl" id="s4lbl">% activo</div><div class="stat-val" id="sC">—</div></div>
+  </div>
+
+  <div class="two-col" id="mainLayout" style="display:none;">
+    <div class="panel">
+      <div class="panel-hdr">
+        <span id="tableTitle">Registros</span>
+        <span id="pageInfo" style="font-weight:400;font-size:11px;"></span>
+      </div>
+      <div id="tableWrap"></div>
+      <div class="pg" id="pgBar">
+        <span class="pg-info" id="pgInfo"></span>
+        <button class="btn" id="prevBtn" onclick="changePage(-1)">← Ant.</button>
+        <button class="btn" id="nextBtn" onclick="changePage(1)">Sig. →</button>
+      </div>
+    </div>
+
+    <div class="panel" id="chartPanel">
+      <div class="panel-hdr">
+        <span id="chartTitle">Gráfica</span>
+        <div class="tabs" id="chartTabs"></div>
+      </div>
+      <div id="numSummary" style="display:none;" class="numeric-summary">
+        <div class="ns"><div class="ns-lbl">Último valor</div><div class="ns-val" id="nsLast">—</div></div>
+        <div class="ns"><div class="ns-lbl">Mínimo</div><div class="ns-val" id="nsMin">—</div></div>
+        <div class="ns"><div class="ns-lbl">Máximo</div><div class="ns-val" id="nsMax">—</div></div>
+        <div class="ns"><div class="ns-lbl">Promedio</div><div class="ns-val" id="nsAvg">—</div></div>
+        <div class="ns"><div class="ns-lbl">Mediana</div><div class="ns-val" id="nsMed">—</div></div>
+        <div class="ns"><div class="ns-lbl">Lecturas</div><div class="ns-val" id="nsCount">—</div></div>
+      </div>
+      <div class="chart-area">
+        <div class="legend" id="chartLegend"></div>
+        <div style="position:relative;width:100%;height:240px;">
+          <canvas id="mainChart" role="img" aria-label="Gráfica de sensores">Datos de sensores.</canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+let allData=[], filteredData=[], currentPage=1, activeChart='auto', chartInst=null;
+const PAGE=40;
+
+function detectTypeFromVariable(name){
+  const n=(name||'').toLowerCase();
+  if(n.includes('temperatura')||n.includes('temp')) return 'temperature';
+  if(n.includes('humedad')||n.includes('hum')) return 'humidity';
+  return 'presence';
+}
+
+function parseCSV(text){
+  if(text.charCodeAt(0)===0xFEFF) text=text.slice(1);
+  const lines=text.split(/\r?\n/).filter(l=>l.length);
+  if(!lines.length) return [];
+  const first=lines[0];
+  const semis=(first.match(/;/g)||[]).length;
+  const commas=(first.match(/,/g)||[]).length;
+  const delim=semis>commas?';':',';
+  const splitLine=(line)=>{
+    const out=[]; let cur=''; let q=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(q){
+        if(ch==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else q=false; }
+        else cur+=ch;
+      } else {
+        if(ch==='"') q=true;
+        else if(ch===delim){out.push(cur);cur='';}
+        else cur+=ch;
+      }
+    }
+    out.push(cur);
+    return out.map(s=>s.trim());
+  };
+  const header=splitLine(lines[0]).map(h=>h.toUpperCase().replace(/\s+/g,''));
+  const idx={
+    variable: header.indexOf('VARIABLE'),
+    valor:    header.indexOf('VALOR'),
+    fecha:    header.indexOf('FECHA'),
+    hora:     header.indexOf('HORA')
+  };
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    const f=splitLine(lines[i]);
+    if(!f.length||f.every(x=>!x)) continue;
+    rows.push({
+      variable: idx.variable>=0?(f[idx.variable]||''):'',
+      valor:    idx.valor   >=0?(f[idx.valor]   ||''):'',
+      fecha:    idx.fecha   >=0?(f[idx.fecha]   ||''):'',
+      hora:     idx.hora    >=0?(f[idx.hora]    ||''):''
+    });
+  }
+  return rows;
+}
+
+async function loadFiles(){
+  const sel=document.getElementById('fileSelect');
+  const st=document.getElementById('sheetStatus');
+  st.textContent='Buscando archivos en el Synology...';
+  try{
+    const r=await fetch('/api/files');
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const files=await r.json();
+    sel.innerHTML='<option value="">— selecciona un archivo —</option>'+
+      files.map(f=>`<option value="${f}">${f}</option>`).join('');
+    st.innerHTML=`✓ ${files.length} archivo(s) disponibles. Selecciona uno y pulsa <strong>Cargar datos</strong>.`;
+  }catch(e){
+    st.textContent='No se pudo listar los archivos: '+e.message+' · ¿Está el servidor local arrancado?';
+  }
+}
+
+async function loadSelectedFile(){
+  const name=document.getElementById('fileSelect').value;
+  const st=document.getElementById('sheetStatus');
+  if(!name){st.textContent='Selecciona primero un archivo CSV.';return;}
+  st.textContent=`Cargando ${name}...`;
+  try{
+    const r=await fetch('/data/'+encodeURIComponent(name));
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const text=await r.text();
+    const rows=parseCSV(text);
+    allData=rows.map(row=>{
+      const tipo=detectTypeFromVariable(row.variable);
+      const rawVal=row.valor||'';
+      let estado=rawVal.toUpperCase();
+      let numVal=null;
+      if(tipo==='temperature'||tipo==='humidity'){
+        numVal=parseFloat(rawVal.replace(',','.'));
+        estado='';
+      }
+      return {sensor:row.variable,estado,numVal,fecha:row.fecha,hora:row.hora,sheet:name,tipo};
+    });
+
+    const vars=[...new Set(allData.map(r=>r.sensor).filter(Boolean))];
+    const vsel=document.getElementById('sheetSelect');
+    vsel.innerHTML='<option value="">Todas las variables</option>'+
+      vars.map(v=>{
+        const t=detectTypeFromVariable(v);
+        const icon=t==='temperature'?'○ temp':t==='humidity'?'◇ hum':'· presencia';
+        return `<option value="${v}">${v}  [${icon}]</option>`;
+      }).join('');
+
+    const typeCounts={};
+    allData.forEach(r=>{typeCounts[r.tipo]=(typeCounts[r.tipo]||0)+1;});
+    const summary=Object.entries(typeCounts).map(([k,v])=>{
+      const lbl=k==='temperature'?'temperatura':k==='humidity'?'humedad':'presencia';
+      return `<strong>${v}</strong> ${lbl}`;
+    }).join(' · ');
+    st.innerHTML=`✓ <strong>${name}</strong> — ${allData.length} registros (${summary})`;
+
+    document.getElementById('filterCard').style.display='block';
+    document.getElementById('statsRow').style.display='grid';
+    document.getElementById('mainLayout').style.display='grid';
+    applyFilters();
+  }catch(e){
+    st.textContent='Error al cargar el CSV: '+e.message;
+  }
+}
+
+window.addEventListener('DOMContentLoaded',loadFiles);
+
+function parseDate(s){
+  if(!s)return null;
+  const p=s.split('/');
+  if(p.length===3)return new Date(`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`);
+  return new Date(s);
+}
+
+function currentType(){
+  const sh=document.getElementById('sheetSelect').value;
+  if(sh) return detectTypeFromVariable(sh);
+  const types=[...new Set(filteredData.map(r=>r.tipo))];
+  if(types.length===1)return types[0];
+  return 'mixed';
+}
+
+function applyFilters(){
+  const sh=document.getElementById('sheetSelect').value;
+  const df=document.getElementById('dateFrom').value;
+  const dt=document.getElementById('dateTo').value;
+  const tf=document.getElementById('timeFrom').value;
+  const tt=document.getElementById('timeTo').value;
+  const es=document.getElementById('estadoFilter').value;
+  filteredData=allData.filter(r=>{
+    if(sh&&r.sensor!==sh)return false;
+    if(es&&r.tipo==='presence'&&r.estado!==es)return false;
+    const d=parseDate(r.fecha);
+    if(d){const ds=d.toISOString().slice(0,10);if(df&&ds<df)return false;if(dt&&ds>dt)return false;}
+    if(tf||tt){const t=r.hora.slice(0,5);if(tf&&t<tf)return false;if(tt&&t>tt)return false;}
+    return true;
+  });
+  currentPage=1;
+  activeChart='auto';
+  renderAll();
+}
+
+function renderAll(){
+  const tipo=currentType();
+  updateStats(tipo);
+  updateUIForType(tipo);
+  renderTable(tipo);
+  buildChartTabs(tipo);
+  renderChart(tipo);
+}
+
+function updateStats(tipo){
+  const n=filteredData.length;
+  document.getElementById('sTotal').textContent=n.toLocaleString();
+  if(tipo==='temperature'||tipo==='humidity'){
+    const vals=filteredData.map(r=>r.numVal).filter(v=>v!==null&&!isNaN(v));
+    const avg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null;
+    const mn=vals.length?Math.min(...vals):null;
+    const mx=vals.length?Math.max(...vals):null;
+    document.getElementById('s2lbl').textContent='Promedio';
+    document.getElementById('s3lbl').textContent='Mínimo';
+    document.getElementById('s4lbl').textContent='Máximo';
+    document.getElementById('sA').style.color='var(--color-text-primary)';
+    document.getElementById('sB').style.color='var(--color-text-primary)';
+    const unit=tipo==='temperature'?'°C':'%';
+    document.getElementById('sA').textContent=avg!==null?avg.toFixed(1)+unit:'—';
+    document.getElementById('sB').textContent=mn!==null?mn.toFixed(1)+unit:'—';
+    document.getElementById('sC').textContent=mx!==null?mx.toFixed(1)+unit:'—';
+  } else {
+    const tr=filteredData.filter(r=>r.estado==='TRUE').length;
+    const fa=n-tr;
+    document.getElementById('s2lbl').textContent='Activaciones';
+    document.getElementById('s3lbl').textContent='Inactivos';
+    document.getElementById('s4lbl').textContent='% activo';
+    document.getElementById('sA').style.color='#3B6D11';
+    document.getElementById('sB').style.color='#A32D2D';
+    document.getElementById('sA').textContent=tr.toLocaleString();
+    document.getElementById('sB').textContent=fa.toLocaleString();
+    document.getElementById('sC').textContent=n?Math.round(tr/n*100)+'%':'—';
+  }
+}
+
+function updateUIForType(tipo){
+  const isNum=tipo==='temperature'||tipo==='humidity';
+  document.getElementById('estadoFieldWrap').style.display=isNum?'none':'flex';
+  const unit=tipo==='temperature'?'°C':tipo==='humidity'?'%':'';
+  document.getElementById('tableTitle').textContent=isNum?`Lecturas ${tipo==='temperature'?'temperatura':'humedad'}`:'Registros';
+
+  if(isNum){
+    const vals=filteredData.map(r=>r.numVal).filter(v=>v!==null&&!isNaN(v));
+    const sorted=[...vals].sort((a,b)=>a-b);
+    const med=sorted.length?sorted.length%2===0?(sorted[sorted.length/2-1]+sorted[sorted.length/2])/2:sorted[Math.floor(sorted.length/2)]:null;
+    const last=filteredData.filter(r=>r.numVal!==null&&!isNaN(r.numVal)).slice(-1)[0];
+    document.getElementById('numSummary').style.display='grid';
+    document.getElementById('nsLast').textContent=last?last.numVal.toFixed(1)+unit:'—';
+    document.getElementById('nsMin').textContent=vals.length?Math.min(...vals).toFixed(1)+unit:'—';
+    document.getElementById('nsMax').textContent=vals.length?Math.max(...vals).toFixed(1)+unit:'—';
+    document.getElementById('nsAvg').textContent=vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1)+unit:'—';
+    document.getElementById('nsMed').textContent=med!==null?med.toFixed(1)+unit:'—';
+    document.getElementById('nsCount').textContent=vals.length.toLocaleString();
+  } else {
+    document.getElementById('numSummary').style.display='none';
+  }
+}
+
+function renderTable(tipo){
+  const isNum=tipo==='temperature'||tipo==='humidity';
+  const unit=tipo==='temperature'?'°C':tipo==='humidity'?'%':'';
+  const tp=Math.ceil(filteredData.length/PAGE);
+  const sl=filteredData.slice((currentPage-1)*PAGE,currentPage*PAGE);
+  let html='';
+  if(!sl.length){
+    html='<div class="empty">Sin datos para los filtros actuales.</div>';
+  } else if(isNum){
+    html=`<table><thead><tr><th style="width:36%">Sensor</th><th style="width:20%">Valor</th><th style="width:24%">Fecha</th><th style="width:20%">Hora</th></tr></thead><tbody>`+
+    sl.map(r=>`<tr><td title="${r.sensor}">${r.sensor}</td><td><strong>${r.numVal!==null&&!isNaN(r.numVal)?r.numVal.toFixed(1)+unit:'—'}</strong></td><td>${r.fecha}</td><td style="font-variant-numeric:tabular-nums">${r.hora}</td></tr>`).join('')+
+    '</tbody></table>';
+  } else {
+    html=`<table><thead><tr><th style="width:38%">Sensor</th><th style="width:20%">Estado</th><th style="width:22%">Fecha</th><th style="width:20%">Hora</th></tr></thead><tbody>`+
+    sl.map(r=>`<tr><td title="${r.sensor}">${r.sensor}</td><td><span class="badge b-${r.estado.toLowerCase()}">${r.estado}</span></td><td>${r.fecha}</td><td style="font-variant-numeric:tabular-nums">${r.hora}</td></tr>`).join('')+
+    '</tbody></table>';
+  }
+  document.getElementById('tableWrap').innerHTML=html;
+  document.getElementById('pgInfo').textContent=tp>1?`Pág. ${currentPage}/${tp}`:'';
+  document.getElementById('prevBtn').style.display=currentPage>1?'inline-block':'none';
+  document.getElementById('nextBtn').style.display=currentPage<tp?'inline-block':'none';
+}
+
+function changePage(d){
+  const tp=Math.ceil(filteredData.length/PAGE);
+  currentPage=Math.max(1,Math.min(tp,currentPage+d));
+  renderTable(currentType());
+}
+
+function buildChartTabs(tipo){
+  const wrap=document.getElementById('chartTabs');
+  let tabs=[];
+  if(tipo==='temperature'||tipo==='humidity'){
+    tabs=[['linea','Línea temporal'],['hora','Por hora'],['dist','Distribución']];
+    if(activeChart==='auto') activeChart='linea';
+  } else if(tipo==='mixed'){
+    tabs=[['hora','Por hora'],['daily','Por día'],['pie','Estado'],['linea','Temporal']];
+    if(activeChart==='auto') activeChart='hora';
+  } else {
+    tabs=[['hora','Por hora'],['daily','Por día'],['pie','Estado'],['linea','Temporal']];
+    if(activeChart==='auto') activeChart='hora';
+  }
+  wrap.innerHTML=tabs.map(([k,l])=>`<div class="tab${activeChart===k?' on':''}" onclick="switchChart('${k}',this)">${l}</div>`).join('');
+}
+
+function switchChart(key,el){
+  activeChart=key;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  renderChart(currentType());
+}
+
+function getTick(){return window.matchMedia('(prefers-color-scheme:dark)').matches?'rgba(255,255,255,.4)':'rgba(0,0,0,.4)';}
+function getGrid(){return window.matchMedia('(prefers-color-scheme:dark)').matches?'rgba(255,255,255,.07)':'rgba(0,0,0,.07)';}
+function setLegend(items){document.getElementById('chartLegend').innerHTML=items.map(i=>`<span class="leg"><span class="leg-sq" style="background:${i.c}"></span>${i.l}</span>`).join('');}
+
+function renderChart(tipo){
+  if(chartInst){chartInst.destroy();chartInst=null;}
+  document.getElementById('chartLegend').innerHTML='';
+  if(!filteredData.length)return;
+
+  const isNum=tipo==='temperature'||tipo==='humidity';
+  const color=tipo==='temperature'?'#D85A30':tipo==='humidity'?'#1D9E75':'#378ADD';
+  const unit=tipo==='temperature'?'°C':tipo==='humidity'?'%':'';
+  const chartTitle=tipo==='temperature'?'Temperatura':tipo==='humidity'?'Humedad':'Actividad';
+  document.getElementById('chartTitle').textContent=chartTitle;
+
+  if(isNum){
+    if(activeChart==='linea'){
+      const sorted=[...filteredData].filter(r=>r.numVal!==null&&!isNaN(r.numVal)).sort((a,b)=>sortByDateTime(a,b));
+      const sample=sorted.length>200?sorted.filter((_,i)=>i%Math.ceil(sorted.length/200)===0):sorted;
+      setLegend([{c:color,l:chartTitle+' ('+unit+')'}]);
+      chartInst=new Chart(document.getElementById('mainChart'),{
+        type:'line',
+        data:{labels:sample.map(r=>r.hora.slice(0,5)),datasets:[{label:chartTitle,data:sample.map(r=>parseFloat(r.numVal.toFixed(2))),borderColor:color,backgroundColor:color+'22',borderWidth:1.5,pointRadius:0,fill:true,tension:.3}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y.toFixed(1)}${unit}`}}},scales:{
+          x:{ticks:{color:getTick(),font:{size:10},maxTicksLimit:8,maxRotation:0},grid:{color:getGrid()}},
+          y:{ticks:{color:getTick(),font:{size:10},callback:v=>v.toFixed(1)+unit},grid:{color:getGrid()}}
+        }}
+      });
+    } else if(activeChart==='hora'){
+      const buckets=Array(24).fill(null).map(()=>[]);
+      filteredData.forEach(r=>{if(r.numVal!==null&&!isNaN(r.numVal)){const h=parseInt(r.hora.split(':')[0]);if(!isNaN(h))buckets[h].push(r.numVal);}});
+      const avgs=buckets.map(b=>b.length?parseFloat((b.reduce((a,c)=>a+c,0)/b.length).toFixed(2)):null);
+      setLegend([{c:color,l:'Promedio por hora'}]);
+      chartInst=new Chart(document.getElementById('mainChart'),{
+        type:'bar',
+        data:{labels:Array(24).fill(0).map((_,i)=>i.toString().padStart(2,'0')+'h'),datasets:[{label:chartTitle,data:avgs,backgroundColor:color+'99',borderColor:color,borderWidth:1,borderRadius:3,barPercentage:.7}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.parsed.y!==null?` ${ctx.parsed.y.toFixed(1)}${unit}`:' sin datos'}}},scales:{
+          x:{ticks:{color:getTick(),font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:12},grid:{color:getGrid()}},
+          y:{ticks:{color:getTick(),font:{size:10},callback:v=>v.toFixed(1)+unit},grid:{color:getGrid()}}
+        }}
+      });
+    } else if(activeChart==='dist'){
+      const vals=filteredData.map(r=>r.numVal).filter(v=>v!==null&&!isNaN(v));
+      if(!vals.length)return;
+      const mn=Math.floor(Math.min(...vals));const mx=Math.ceil(Math.max(...vals));
+      const step=Math.max(1,Math.round((mx-mn)/10));
+      const bins=[];const counts=[];
+      for(let v=mn;v<mx;v+=step){bins.push(`${v}–${v+step}${unit}`);const c=vals.filter(x=>x>=v&&x<v+step).length;counts.push(c);}
+      setLegend([{c:color,l:'Frecuencia de lecturas'}]);
+      chartInst=new Chart(document.getElementById('mainChart'),{
+        type:'bar',
+        data:{labels:bins,datasets:[{label:'Lecturas',data:counts,backgroundColor:color+'99',borderColor:color,borderWidth:1,borderRadius:3}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+          x:{ticks:{color:getTick(),font:{size:10},maxRotation:35},grid:{color:getGrid()}},
+          y:{ticks:{color:getTick(),font:{size:10}},grid:{color:getGrid()}}
+        }}
+      });
+    }
+  } else {
+    if(activeChart==='hora'){
+      const c=Array(24).fill(0).map(()=>({TRUE:0,FALSE:0}));
+      filteredData.forEach(r=>{const h=parseInt(r.hora.split(':')[0]);if(!isNaN(h))c[h][r.estado==='TRUE'?'TRUE':'FALSE']++;});
+      setLegend([{c:'#1D9E75',l:'TRUE'},{c:'#E24B4A',l:'FALSE'}]);
+      chartInst=new Chart(document.getElementById('mainChart'),{type:'bar',
+        data:{labels:Array(24).fill(0).map((_,i)=>i.toString().padStart(2,'0')+'h'),datasets:[
+          {label:'TRUE',data:c.map(x=>x.TRUE),backgroundColor:'#1D9E75',borderRadius:3,barPercentage:.7},
+          {label:'FALSE',data:c.map(x=>x.FALSE),backgroundColor:'#E24B4A',borderRadius:3,barPercentage:.7}
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+          x:{stacked:true,ticks:{color:getTick(),font:{size:10},maxRotation:0,autoSkip:true,maxTicksLimit:12},grid:{color:getGrid()}},
+          y:{stacked:true,ticks:{color:getTick(),font:{size:10}},grid:{color:getGrid()}}
+        }}
+      });
+    } else if(activeChart==='daily'){
+      const map={};
+      filteredData.forEach(r=>{if(!map[r.fecha])map[r.fecha]={TRUE:0,FALSE:0};map[r.fecha][r.estado==='TRUE'?'TRUE':'FALSE']++;});
+      const labels=Object.keys(map).sort((a,b)=>sortDateStr(a,b));
+      setLegend([{c:'#1D9E75',l:'TRUE'},{c:'#E24B4A',l:'FALSE'}]);
+      chartInst=new Chart(document.getElementById('mainChart'),{type:'bar',
+        data:{labels,datasets:[
+          {label:'TRUE',data:labels.map(l=>map[l].TRUE),backgroundColor:'#1D9E75',borderRadius:3,barPercentage:.6},
+          {label:'FALSE',data:labels.map(l=>map[l].FALSE),backgroundColor:'#E24B4A',borderRadius:3,barPercentage:.6}
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+          x:{stacked:true,ticks:{color:getTick(),font:{size:10},maxRotation:35},grid:{color:getGrid()}},
+          y:{stacked:true,ticks:{color:getTick(),font:{size:10}},grid:{color:getGrid()}}
+        }}
+      });
+    } else if(activeChart==='pie'){
+      const tr=filteredData.filter(r=>r.estado==='TRUE').length;
+      const fa=filteredData.length-tr;
+      setLegend([{c:'#1D9E75',l:`TRUE — ${tr}`},{c:'#E24B4A',l:`FALSE — ${fa}`}]);
+      chartInst=new Chart(document.getElementById('mainChart'),{type:'doughnut',
+        data:{labels:['TRUE','FALSE'],datasets:[{data:[tr,fa],backgroundColor:['#1D9E75','#E24B4A'],borderWidth:0,hoverOffset:4}]},
+        options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const t=ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);return ` ${ctx.label}: ${ctx.raw} (${Math.round(ctx.raw/t*100)}%)`;}}}}}
+      });
+    } else if(activeChart==='linea'){
+      const sorted=[...filteredData].sort((a,b)=>sortByDateTime(a,b));
+      const sample=sorted.length>150?sorted.filter((_,i)=>i%Math.ceil(sorted.length/150)===0):sorted;
+      setLegend([{c:'#378ADD',l:'1 = activo  /  0 = inactivo'}]);
+      chartInst=new Chart(document.getElementById('mainChart'),{type:'line',
+        data:{labels:sample.map(r=>r.hora.slice(0,5)),datasets:[{label:'Estado',data:sample.map(r=>r.estado==='TRUE'?1:0),borderColor:'#378ADD',backgroundColor:'#378ADD22',borderWidth:1.5,pointRadius:0,stepped:true,fill:true}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+          x:{ticks:{color:getTick(),font:{size:10},maxTicksLimit:8,maxRotation:0},grid:{color:getGrid()}},
+          y:{min:-.1,max:1.1,ticks:{color:getTick(),font:{size:10},callback:v=>v===1?'TRUE':v===0?'FALSE':''},grid:{color:getGrid()}}
+        }}
+      });
+    }
+  }
+}
+
+function sortByDateTime(a,b){
+  return toTs(a)-toTs(b);
+}
+function toTs(r){
+  const p=r.fecha.split('/');
+  const ds=p.length===3?`${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`:r.fecha;
+  return new Date(`${ds}T${r.hora||'00:00:00'}`).getTime();
+}
+function sortDateStr(a,b){
+  const pa=a.split('/'),pb=b.split('/');
+  if(pa.length===3&&pb.length===3){return new Date(`${pa[2]}-${pa[1]}-${pa[0]}`)-new Date(`${pb[2]}-${pb[1]}-${pb[0]}`);}
+  return a.localeCompare(b);
+}
+
+function clearFilters(){
+  ['dateFrom','dateTo','timeFrom','timeTo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('sheetSelect').value='';
+  document.getElementById('estadoFilter').value='';
+  applyFilters();
+}
+
+function exportCSV(){
+  if(!filteredData.length)return;
+  const rows=filteredData.map(r=>{
+    const v=r.tipo==='presence'?r.estado:(r.numVal!==null?r.numVal:'');
+    return `"${r.sensor}","${v}",${r.fecha},${r.hora},${r.tipo}`;
+  });
+  const blob=new Blob(['Sensor,Valor,Fecha,Hora,Tipo\n'+rows.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sensores.csv';a.click();
+}
+</script>
+
+</body>
+</html>
